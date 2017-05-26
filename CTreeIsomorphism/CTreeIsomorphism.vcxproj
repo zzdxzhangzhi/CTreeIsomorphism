@@ -139,6 +139,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <Text Include="..\..\TreeIsomorphism\TreeIsomorphism\bin\Debug\treelabels.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="CRootedTree.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="CRootedTree.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
