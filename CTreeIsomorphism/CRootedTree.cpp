@@ -1,11 +1,14 @@
 #include <vector>
 #include <list>
 #include <algorithm>
+#include <iostream>
 #include "CRootedTree.h"
 
 
 using std::vector;
 using std::list;
+using std::find;
+using std::find_first_of;
 
 
 CRootedTree::CTreeNode::CTreeNode(const CTreeNode &ex_node)
@@ -62,30 +65,36 @@ CRootedTree& CRootedTree::operator = (const CRootedTree &ex_tree)
 CRootedTree::pCTreeNode CRootedTree::buildTree(int iSerialNo, 
 	const vector<int> &labels, int &tree_depth)
 {
+	++tree_depth;
 	pCTreeNode pnode = new CTreeNode(labels.at(iSerialNo));
+	//std::cout << "serials no: " << iSerialNo << " ";
 	for (size_t i = 0;	i < labels.size(); i++)
 	{
 		if (labels.at(i) == iSerialNo)
-			pnode->m_children.push_back(buildTree(i, labels, m_depth));
+			pnode->m_children.push_back(buildTree(i, labels, tree_depth));
 	}
 
 	return pnode;
 }
 
 CRootedTree::CRootedTree(const vector<int> &labels)
-	:m_root(nullptr), m_depth(0), m_order(labels.size())
+	:m_root(nullptr), m_depth(0), m_order(labels.front())
 {
 	if (!labels.empty())
 	{
 		vector<int>::const_iterator iter = 
 			find(labels.cbegin(), labels.cend(), ROOT_LABEL);
 
-		int rootSerialNo = iter - labels.cbegin();
-		m_root = buildTree(rootSerialNo, labels, m_depth);
+		int rootSerialNo = iter - (labels.cbegin() + 1);
+		//std::cout << "root no: " << rootSerialNo << std::endl;
+		m_root = buildTree(rootSerialNo, 
+			vector<int>(labels.cbegin() + 1, labels.cend()), 
+			m_depth);
+		//std::cout << std::endl;
 	}
 }
 
-bool CRootedTree::isIsomorphism(const pCTreeNode tnode1, const pCTreeNode tnode2)
+bool isIsomorphism(const CRootedTree::pCTreeNode tnode1, const CRootedTree::pCTreeNode tnode2)
 {
 	if (tnode1 == nullptr && tnode2 == nullptr)
 		return true;
@@ -99,7 +108,20 @@ bool CRootedTree::isIsomorphism(const pCTreeNode tnode1, const pCTreeNode tnode2
 		return false;
 	else
 	{
-		for (list<CTreeNode *>::const_iterator iter1 = tnode1->m_children.cbegin();
+		bool (*pred)(const CRootedTree::pCTreeNode, const CRootedTree::pCTreeNode) = &isIsomorphism;
+		int isomorphismCount = 0;
+		list<CRootedTree::CTreeNode *>::const_iterator iter1 = tnode1->m_children.cbegin();
+		while ((iter1 = std::find_first_of(iter1, tnode1->m_children.cend(), 
+			tnode2->m_children.cbegin(), tnode2->m_children.cend(), 
+			pred)) != tnode1->m_children.cend())
+		{
+			isomorphismCount++;
+			++iter1;
+		}
+		//std::cout << "isomorphismCount: " << isomorphismCount << " " << "children size: " << tnode1->m_children.size() << " ";
+		return (isomorphismCount == tnode1->m_children.size());
+
+		/*for (list<CTreeNode *>::const_iterator iter1 = tnode1->m_children.cbegin();
 			iter1 != m_root->m_children.cend(); iter1++)
 		{
 			bool isChildIsomorphism = false;
@@ -114,17 +136,46 @@ bool CRootedTree::isIsomorphism(const pCTreeNode tnode1, const pCTreeNode tnode2
 				return false;
 		}
 
-		return true;
+		return true;*/
 	}
 
 }
 
 bool CRootedTree::isIsomorphism(const CRootedTree &ex_tree)
 {
-	if (m_root == nullptr && ex_tree.m_root == nullptr)
+	return ::isIsomorphism(this, &ex_tree);
+}
+
+bool isIsomorphism(const CRootedTree *tree1, const CRootedTree *tree2)
+{
+	if (tree1->m_root == nullptr && tree2->m_root == nullptr)
 		return true;
-	else if (m_root == nullptr || ex_tree.m_root == nullptr)
+	else if (tree1->m_root == nullptr || tree2->m_root == nullptr)
 		return false;
 	else
-		return isIsomorphism(m_root, ex_tree.m_root);
+		return ::isIsomorphism(tree1->m_root, tree2->m_root);	
+}
+
+void printTreeNode(CRootedTree::CTreeNode *pNode)
+{
+	if (pNode != nullptr )
+	{
+		std::cout << pNode->m_label << " ";
+		if (!pNode->m_children.empty())
+		{
+			for each (CRootedTree::CTreeNode * pChildNode in pNode->m_children)
+			{
+				printTreeNode(pChildNode);
+			}
+		}
+		//std::cout << std::endl;
+	}
+}
+
+void printTree(const CRootedTree &rTree)
+{
+	if (!rTree.isEmpty())
+	{
+		printTreeNode(rTree.m_root);
+	}
 }

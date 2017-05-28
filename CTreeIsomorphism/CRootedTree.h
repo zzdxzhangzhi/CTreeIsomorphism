@@ -19,17 +19,17 @@ public:
 	
 	bool isIsomorphism(const CRootedTree &ex_tree);
 	
-	bool isEmpty()
+	bool isEmpty() const
 	{
-		return (m_order == 0);
+		return (m_root == nullptr);
 	}
 
-	int depth()
+	int depth() const
 	{
 		return m_depth;
 	}
 
-	int order()
+	int order() const
 	{
 		return m_order;
 	}
@@ -56,7 +56,11 @@ private:
 
 	pCTreeNode copyTreeNode(const pCTreeNode pnode);
 	pCTreeNode buildTree(int iSerialNo, const vector<int> &labels, int &tree_depth);
-	bool isIsomorphism(const pCTreeNode tnode1, const pCTreeNode tnode2);
+	
+	friend bool isIsomorphism(const pCTreeNode tnode1, const pCTreeNode tnode2);
+	friend bool isIsomorphism(const CRootedTree *tree1, const CRootedTree *tree2);
+	friend void printTree(const CRootedTree &rTree);
+	friend void printTreeNode(CTreeNode *pNode);
 
 	//list<int> getLayout();
 };
