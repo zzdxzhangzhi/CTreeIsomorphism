@@ -21,6 +21,8 @@ using std::find;
 using std::find_first_of;
 using std::fprintf;
 using std::swap;
+using std::sort;
+using std::less;
 using namespace std::placeholders;
 
 
@@ -34,6 +36,7 @@ public:
 	CRootedTree& operator = (const CRootedTree &ex_tree);
 
 	bool isIsomorphism(const CRootedTree &ex_tree);
+	//bool isIsomorphism2(CRootedTree &ex_tree);
 
 	bool isEmpty() const
 	{
@@ -84,6 +87,7 @@ private:
 
 	friend bool isIsomorphism(const pCTreeNode tnode1, const pCTreeNode tnode2);
 	friend bool isIsomorphism(const CRootedTree *tree1, const CRootedTree *tree2);
+	friend bool isIsomorphism2(CRootedTree *tree1, CRootedTree *tree2);
 	//friend void printTree(const CRootedTree &rTree);
 	//friend void printTreeNode(CTreeNode *pNode);
 
@@ -145,7 +149,12 @@ void CRootedTree::generateNodeList()
 				citer != pNodes1->cend(); citer++)
 			{
 				m_nodes[i].push_back(*citer);
-				pNodes2->assign((*citer)->m_children.cbegin(), (*citer)->m_children.cend());
+				
+				pNodes2->clear();
+				if (!((*citer)->m_isLeaf))
+				{
+					pNodes2->insert(pNodes2->cend() - 1, (*citer)->m_children.cbegin(), (*citer)->m_children.cend());
+				}
 			}
 			swap(pNodes1, pNodes2);
 		}
@@ -199,7 +208,7 @@ CRootedTree::pCTreeNode CRootedTree::buildTree(int iSerialNo,
 		{
 			pnode->m_isLeaf = false;
 			pCTreeNode pChild = buildTree(i, labels, tree_depth);
-			pnode->m_rep.insert(pnode->m_rep.length() - 2, pChild->m_rep);
+			//pnode->m_rep.insert(pnode->m_rep.length() - 2, pChild->m_rep);
 			pnode->m_children.push_back(pChild);
 		}
 	}
@@ -287,10 +296,67 @@ bool isIsomorphism(const CRootedTree *tree1, const CRootedTree *tree2)
 		return ::isIsomorphism(tree1->m_root, tree2->m_root);
 }
 
+bool isIsomorphism2(CRootedTree *tree1, CRootedTree *tree2)
+{
+	if (tree1->m_root == nullptr && tree2->m_root == nullptr)
+		return true;
+	else if (tree1->m_root == nullptr || tree2->m_root == nullptr)
+		return false;
+	else if (tree1->m_levels != tree2->m_levels)
+		return false;
+	else
+	{
+		int h = tree1->m_levels;
+		for (int i = h - 1; i > 0; i--)
+		{
+			if (tree1->m_nodes[i].size() != tree2->m_nodes[i].size())
+				return false;
+
+			vector<string> t1LevelStrs, t2LevelStrs;
+			vector<CRootedTree::CTreeNode *>::iterator nodeIt1 = tree1->m_nodes[i].begin();
+			vector<CRootedTree::CTreeNode *>::iterator nodeIt2 = tree1->m_nodes[i].begin();
+			for (; nodeIt1 != tree1->m_nodes[i].end() && nodeIt2 != tree2->m_nodes[i].end(); 
+				nodeIt1++, nodeIt2++)
+			{
+				if (!((*nodeIt1)->m_isLeaf))
+				{
+					vector<CRootedTree::CTreeNode *>::const_reverse_iterator criter 
+						= (*nodeIt1)->m_children.crbegin();
+					for (; criter != (*nodeIt1)->m_children.crend(); criter++)
+					{
+						(*nodeIt1)->m_rep.insert(1, (*criter)->m_rep);
+					}
+				}
+				t1LevelStrs.push_back((*nodeIt1)->m_rep);
+				t2LevelStrs.push_back((*nodeIt2)->m_rep);
+			}
+
+			sort(t1LevelStrs.begin(), t1LevelStrs.end());
+			sort(t2LevelStrs.begin(), t2LevelStrs.end());
+			if (!equal(t1LevelStrs.cbegin(), t1LevelStrs.cend(),
+				t2LevelStrs.cbegin(), t2LevelStrs.cend()))
+				return false;
+
+			for (size_t j = 0; j < t1LevelStrs.size(); i++)
+			{
+				tree1->m_nodes[i][j]->m_rep.assign(t1LevelStrs[j]);
+				tree2->m_nodes[i][j]->m_rep.assign(t2LevelStrs[j]);
+			}
+		}
+
+		return true;
+	}
+}
+
 bool CRootedTree::isIsomorphism(const CRootedTree &ex_tree)
 {
 	return ::isIsomorphism(this, &ex_tree);
 }
+
+//bool CRootedTree::isIsomorphism2(CRootedTree &ex_tree)
+//{
+//	return ::isIsomorphism2(this, &ex_tree);
+//}
 
 //void printTreeNode(CRootedTree::CTreeNode *pNode)
 //{
