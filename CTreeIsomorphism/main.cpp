@@ -6,6 +6,7 @@
 #include <string>
 #include <cstring>
 #include <cstdlib>
+#include <cstdio>
 
 using std::cin;
 using std::cout;
@@ -18,6 +19,7 @@ using std::bind;
 using std::find_if;
 using std::find;
 using std::find_first_of;
+using std::fprintf;
 using namespace std::placeholders;
 
 
@@ -320,13 +322,59 @@ void outputTrees(vector<CRootedTree *> &rootedTrees)
 	cout << endl;
 }
 
+void outputTreesData(vector<CRootedTree *> &rootedTrees, vector<int> &scenario)
+{
+	vector<int> treeClasses(rootedTrees.size(), 0);
+	int treeClassesMax = treeClasses[0];
+
+	scenario.push_back(treeClasses[0]);
+	bool(*pred)(const CRootedTree *, const CRootedTree *) = &isIsomorphism;
+	for (size_t j = 1; j < rootedTrees.size(); j++)
+	{
+		vector<CRootedTree *>::iterator iter = rootedTrees.begin();
+		iter = find_first_of(iter, iter + j, iter + j, iter + (j + 1), pred);
+		size_t i = iter - rootedTrees.begin();
+		//cout << "(" << i << ", " << j << ")";
+		if (i < j)
+			treeClasses[j] = treeClasses[i];
+		else
+			treeClasses[j] = ++treeClassesMax;
+
+		scenario.push_back(treeClasses[j]);
+	}
+
+	/*fprintf(stdout, "%d: ", scenario.at(0));
+	for (size_t j = 1; j < scenario.size(); j++)
+	{
+		fprintf(stdout, "%d ", scenario.at(j));
+	}
+	fprintf(stdout, "\n");*/
+}
+
+void outputResult(const vector<vector<int>> &scenarios)
+{
+	for (size_t i = 0; i < scenarios.size(); i++)
+	{
+		fprintf(stdout, "%d: ", scenarios[i].at(0));
+		for (size_t j = 1; j < scenarios[i].size(); j++)
+		{
+			fprintf(stdout, "%d ", scenarios[i].at(j));
+		}
+		fprintf(stdout, "\n");
+	}
+}
+
 int main()
 {
 	string strInput;
 
 	int scenarioNo = 0;
+	vector<vector<int>> scenarios;
 	while (getline(cin, strInput))
 	{
+		if (strInput == "")
+			continue;
+
 		string line = trim(strInput);
 		if (line == "0")
 			break;		
@@ -336,8 +384,8 @@ int main()
 		vector<CRootedTree *> rootedTrees;
 		for (int i = 0; i < treesNum; i++)
 		{
-			strInput.clear();
-			line.clear();
+			/*strInput.clear();
+			line.clear();*/
 
 			getline(cin, strInput);
 			line = trim(strInput);
@@ -347,12 +395,18 @@ int main()
 		
 			getTreesFromLabels(serialStrs, rootedTrees);
 		}
+
+		vector<int> scenario;
+		scenario.push_back(scenarioNo);
+		outputTreesData(rootedTrees, scenario);
+		/*cout << scenarioNo << ": " << flush;
+		outputTrees(rootedTrees);*/
 		
-		cout << scenarioNo << ": " << flush;
-		outputTrees(rootedTrees);
-		
+		scenarios.push_back(scenario);
 		scenarioNo++;
 	}
+
+	outputResult(scenarios);
 
 	return 0;
 }
