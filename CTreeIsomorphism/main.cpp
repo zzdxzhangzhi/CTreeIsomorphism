@@ -20,6 +20,7 @@ using std::find_if;
 using std::find;
 using std::find_first_of;
 using std::fprintf;
+using std::swap;
 using namespace std::placeholders;
 
 
@@ -57,13 +58,14 @@ private:
 	public:
 		int m_label;
 		int m_serialNo;
-		int m_levels;
+		int m_level;
 		bool m_isLeaf;
-		vector<int> m_rep;
+		string m_rep;
 		vector<CTreeNode *> m_children;
 
-		CTreeNode() : m_label(-1), m_serialNo(0), m_levels(1), m_isLeaf(true), m_rep({ 1, 0 }) {}
-		CTreeNode(int label) : m_label(label), m_serialNo(0), m_levels(1), m_isLeaf(true), m_rep({ 1, 0 }) {}
+		CTreeNode() : m_label(-1), m_serialNo(0), m_level(0), m_isLeaf(true), m_rep("10") {}
+		CTreeNode(int label, int serialNo, int level) 
+			: m_label(label), m_serialNo(serialNo), m_level(level), m_isLeaf(true), m_rep("10") {}
 		CTreeNode(const CTreeNode &ex_node);
 	} *pCTreeNode;
 
@@ -76,6 +78,9 @@ private:
 
 	pCTreeNode copyTreeNode(const pCTreeNode pnode);
 	pCTreeNode buildTree(int iSerialNo, const vector<int> &labels, int &tree_depth);
+	void generateNodeList();
+	void clearNodes();
+	//int getlevels(const vector<int> &labels);
 
 	friend bool isIsomorphism(const pCTreeNode tnode1, const pCTreeNode tnode2);
 	friend bool isIsomorphism(const CRootedTree *tree1, const CRootedTree *tree2);
@@ -91,7 +96,7 @@ const int CRootedTree::ROOT_LABEL;
 
 
 CRootedTree::CTreeNode::CTreeNode(const CTreeNode &ex_node)
-	: m_label(ex_node.m_label), m_serialNo(ex_node.m_serialNo), m_levels(ex_node.m_levels), 
+	: m_label(ex_node.m_label), m_serialNo(ex_node.m_serialNo), m_level(ex_node.m_level), 
 	m_isLeaf(ex_node.m_isLeaf), m_rep(ex_node.m_rep)
 {
 	if (!m_children.empty())
@@ -111,10 +116,47 @@ CRootedTree::pCTreeNode CRootedTree::copyTreeNode(const pCTreeNode pnode)
 	return res_node;
 }
 
+void CRootedTree::clearNodes()
+{
+	for (vector<vector<CTreeNode *>>::iterator iter = m_nodes.begin();
+		iter != m_nodes.end(); iter++)
+	{
+		iter->clear();
+	}
+	m_nodes.clear();
+}
+
+void CRootedTree::generateNodeList()
+{
+	clearNodes();
+
+	if (m_root != nullptr)
+	{
+		m_nodes.resize(m_levels);
+		vector<CTreeNode *> oneLevelNodes1(1, m_root);
+		vector<CTreeNode *> oneLevelNodes2;
+		
+		//pCTreeNode pNode = m_root;
+		vector<CTreeNode *> *pNodes1 = &oneLevelNodes1;
+		vector<CTreeNode *> *pNodes2 = &oneLevelNodes2;
+		for (size_t i = 0; i < m_nodes.size(); i++)
+		{
+			for (vector<CTreeNode *>::const_iterator citer = pNodes1->cbegin();
+				citer != pNodes1->cend(); citer++)
+			{
+				m_nodes[i].push_back(*citer);
+				pNodes2->assign((*citer)->m_children.cbegin(), (*citer)->m_children.cend());
+			}
+			swap(pNodes1, pNodes2);
+		}
+	}
+}
+
 CRootedTree::CRootedTree(const CRootedTree &ex_tree)
 	: m_levels(ex_tree.m_levels), m_order(ex_tree.m_order)
 {
 	m_root = copyTreeNode(ex_tree.m_root);
+	generateNodeList();
 }
 
 CRootedTree::~CRootedTree()
@@ -126,6 +168,7 @@ CRootedTree::~CRootedTree()
 		m_root->m_children.erase(m_root->m_children.begin());
 	}
 
+	clearNodes();
 	m_root = nullptr;
 	m_levels = 0;
 	m_order = 0;
@@ -138,6 +181,7 @@ CRootedTree& CRootedTree::operator = (const CRootedTree &ex_tree)
 
 	delete m_root;
 	m_root = copyTreeNode(ex_tree.m_root);
+	generateNodeList();
 
 	return (*this);
 }
@@ -145,17 +189,28 @@ CRootedTree& CRootedTree::operator = (const CRootedTree &ex_tree)
 CRootedTree::pCTreeNode CRootedTree::buildTree(int iSerialNo,
 	const vector<int> &labels, int &tree_depth)
 {
-	++tree_depth;
-	pCTreeNode pnode = new CTreeNode(labels.at(iSerialNo));
+	pCTreeNode pnode = new CTreeNode(labels.at(iSerialNo), iSerialNo, tree_depth);
 	//std::cout << "serials no: " << iSerialNo << " ";
+
+	tree_depth++;
 	for (size_t i = 0; i < labels.size(); i++)
 	{
 		if (labels.at(i) == iSerialNo)
-			pnode->m_children.push_back(buildTree(i, labels, tree_depth));
+		{
+			pnode->m_isLeaf = false;
+			pCTreeNode pChild = buildTree(i, labels, tree_depth);
+			pnode->m_rep.insert(pnode->m_rep.length() - 2, pChild->m_rep);
+			pnode->m_children.push_back(pChild);
+		}
 	}
 
 	return pnode;
 }
+
+//int CRootedTree::getlevels(const vector<int> &labels)
+//{
+//	remove
+//}
 
 CRootedTree::CRootedTree(const vector<int> &labels)
 	:m_root(nullptr), m_levels(0), m_order(labels.front())
@@ -171,6 +226,7 @@ CRootedTree::CRootedTree(const vector<int> &labels)
 			vector<int>(labels.cbegin() + 1, labels.cend()),
 			m_levels);
 		//std::cout << std::endl;
+		generateNodeList();
 	}
 }
 
