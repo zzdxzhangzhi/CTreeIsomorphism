@@ -9,16 +9,16 @@
 using std::vector;
 using std::list;
 
-class CRootedTree 
+class CRootedTree
 {
 public:
-	CRootedTree(): m_root(nullptr), m_depth(0), m_order(0) {}
+	CRootedTree() : m_root(nullptr), m_depth(0), m_order(0) {}
 	CRootedTree(const vector<int> &labels);
 	CRootedTree(const CRootedTree &ex_tree);
 	CRootedTree& operator = (const CRootedTree &ex_tree);
-	
+
 	bool isIsomorphism(const CRootedTree &ex_tree);
-	
+
 	bool isEmpty() const
 	{
 		return (m_root == nullptr);
@@ -33,18 +33,18 @@ public:
 	{
 		return m_order;
 	}
-	
+
 	virtual ~CRootedTree();
-//protected:
+	//protected:
 private:
 	typedef class CTreeNode
 	{
 	public:
 		int m_label;
-		list<CTreeNode *> m_children;
+		vector<CTreeNode *> m_children;
 
-		CTreeNode(): m_label(-1) {}
-		CTreeNode(int label): m_label(label) {}
+		CTreeNode() : m_label(-1) {}
+		CTreeNode(int label) : m_label(label) {}
 		CTreeNode(const CTreeNode &ex_node);
 	} *pCTreeNode;
 
@@ -56,16 +56,16 @@ private:
 
 	pCTreeNode copyTreeNode(const pCTreeNode pnode);
 	pCTreeNode buildTree(int iSerialNo, const vector<int> &labels, int &tree_depth);
-	
+
 	friend bool isIsomorphism(const pCTreeNode tnode1, const pCTreeNode tnode2);
 	friend bool isIsomorphism(const CRootedTree *tree1, const CRootedTree *tree2);
-	friend void printTree(const CRootedTree &rTree);
-	friend void printTreeNode(CTreeNode *pNode);
+	//friend void printTree(const CRootedTree &rTree);
+	//friend void printTreeNode(CTreeNode *pNode);
 
 	//list<int> getLayout();
 };
 
-//const int CRootedTree::ROOT_LABEL = -1;
+const int CRootedTree::ROOT_LABEL;
 
 //bool isEachElemNumEqual(vector<int> v1, vector<int> v2);
 
