@@ -54,7 +54,7 @@ private:
 	{
 	public:
 		int m_label;
-		list<CTreeNode *> m_children;
+		vector<CTreeNode *> m_children;
 
 		CTreeNode() : m_label(-1) {}
 		CTreeNode(int label) : m_label(label) {}
@@ -88,8 +88,8 @@ CRootedTree::CTreeNode::CTreeNode(const CTreeNode &ex_node)
 {
 	if (!m_children.empty())
 	{
-		list<CTreeNode *>::const_iterator iter = ex_node.m_children.cbegin();
-		list<CTreeNode *>::const_iterator lEnd = ex_node.m_children.cend();
+		vector<CTreeNode *>::const_iterator iter = ex_node.m_children.cbegin();
+		vector<CTreeNode *>::const_iterator lEnd = ex_node.m_children.cend();
 		for (; iter != lEnd; iter++)
 		{
 			m_children.push_back(new CTreeNode(*(*iter)));
@@ -115,7 +115,7 @@ CRootedTree::~CRootedTree()
 	{
 		pCTreeNode eachNode = m_root->m_children.front();
 		delete eachNode;
-		m_root->m_children.pop_front();
+		m_root->m_children.erase(m_root->m_children.begin());
 	}
 
 	m_root = nullptr;
@@ -182,7 +182,7 @@ bool isIsomorphism(const CRootedTree::pCTreeNode tnode1, const CRootedTree::pCTr
 	{
 		bool(*pred)(const CRootedTree::pCTreeNode, const CRootedTree::pCTreeNode) = &isIsomorphism;
 		int isomorphismCount = 0;
-		list<CRootedTree::CTreeNode *>::const_iterator iter1 = tnode1->m_children.cbegin();
+		vector<CRootedTree::CTreeNode *>::const_iterator iter1 = tnode1->m_children.cbegin();
 		while ((iter1 = std::find_first_of(iter1, tnode1->m_children.cend(),
 			tnode2->m_children.cbegin(), tnode2->m_children.cend(),
 			pred)) != tnode1->m_children.cend())
@@ -316,11 +316,6 @@ void outputTrees(vector<CRootedTree *> &rootedTrees)
 			treeClasses[j] = ++treeClassesMax;
 
 		cout << treeClasses[j] << " ";
-
-		/*for (int i = 0; i < j; i++)
-		{
-
-		}*/
 	}
 	cout << endl;
 }
