@@ -27,7 +27,7 @@ using namespace std::placeholders;
 class CRootedTree
 {
 public:
-	CRootedTree() : m_root(nullptr), m_depth(0), m_order(0) {}
+	CRootedTree() : m_root(nullptr), m_levels(0), m_order(0) {}
 	CRootedTree(const vector<int> &labels);
 	CRootedTree(const CRootedTree &ex_tree);
 	CRootedTree& operator = (const CRootedTree &ex_tree);
@@ -41,7 +41,7 @@ public:
 
 	int depth() const
 	{
-		return m_depth;
+		return m_levels;
 	}
 
 	int order() const
@@ -56,15 +56,20 @@ private:
 	{
 	public:
 		int m_label;
+		int m_serialNo;
+		int m_levels;
+		bool m_isLeaf;
+		vector<int> m_rep;
 		vector<CTreeNode *> m_children;
 
-		CTreeNode() : m_label(-1) {}
-		CTreeNode(int label) : m_label(label) {}
+		CTreeNode() : m_label(-1), m_serialNo(0), m_levels(1), m_isLeaf(true), m_rep({ 1, 0 }) {}
+		CTreeNode(int label) : m_label(label), m_serialNo(0), m_levels(1), m_isLeaf(true), m_rep({ 1, 0 }) {}
 		CTreeNode(const CTreeNode &ex_node);
 	} *pCTreeNode;
 
 	CTreeNode *m_root;
-	int m_depth;
+	vector<vector<CTreeNode*>> m_nodes;
+	int m_levels;
 	int m_order;
 
 	static const int ROOT_LABEL = -1;
@@ -86,7 +91,8 @@ const int CRootedTree::ROOT_LABEL;
 
 
 CRootedTree::CTreeNode::CTreeNode(const CTreeNode &ex_node)
-	: m_label(ex_node.m_label)
+	: m_label(ex_node.m_label), m_serialNo(ex_node.m_serialNo), m_levels(ex_node.m_levels), 
+	m_isLeaf(ex_node.m_isLeaf), m_rep(ex_node.m_rep)
 {
 	if (!m_children.empty())
 	{
@@ -106,7 +112,7 @@ CRootedTree::pCTreeNode CRootedTree::copyTreeNode(const pCTreeNode pnode)
 }
 
 CRootedTree::CRootedTree(const CRootedTree &ex_tree)
-	: m_depth(ex_tree.m_depth), m_order(ex_tree.m_order)
+	: m_levels(ex_tree.m_levels), m_order(ex_tree.m_order)
 {
 	m_root = copyTreeNode(ex_tree.m_root);
 }
@@ -121,13 +127,13 @@ CRootedTree::~CRootedTree()
 	}
 
 	m_root = nullptr;
-	m_depth = 0;
+	m_levels = 0;
 	m_order = 0;
 }
 
 CRootedTree& CRootedTree::operator = (const CRootedTree &ex_tree)
 {
-	m_depth = ex_tree.m_depth;
+	m_levels = ex_tree.m_levels;
 	m_order = ex_tree.m_order;
 
 	delete m_root;
@@ -152,7 +158,7 @@ CRootedTree::pCTreeNode CRootedTree::buildTree(int iSerialNo,
 }
 
 CRootedTree::CRootedTree(const vector<int> &labels)
-	:m_root(nullptr), m_depth(0), m_order(labels.front())
+	:m_root(nullptr), m_levels(0), m_order(labels.front())
 {
 	if (!labels.empty())
 	{
@@ -163,7 +169,7 @@ CRootedTree::CRootedTree(const vector<int> &labels)
 		//std::cout << "root no: " << rootSerialNo << std::endl;
 		m_root = buildTree(rootSerialNo,
 			vector<int>(labels.cbegin() + 1, labels.cend()),
-			m_depth);
+			m_levels);
 		//std::cout << std::endl;
 	}
 }
