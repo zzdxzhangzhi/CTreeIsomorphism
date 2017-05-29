@@ -136,6 +136,7 @@ void CRootedTree::generateNodeList()
 
 	if (m_root != nullptr)
 	{
+		cout << "m level: " << m_levels << endl;
 		m_nodes.resize(m_levels);
 		vector<CTreeNode *> oneLevelNodes1(1, m_root);
 		vector<CTreeNode *> oneLevelNodes2;
@@ -212,7 +213,7 @@ CRootedTree::pCTreeNode CRootedTree::buildTree(int iSerialNo,
 			pnode->m_children.push_back(pChild);
 		}
 	}
-
+	std::cout << "serials no: " << iSerialNo << " ";
 	return pnode;
 }
 
@@ -230,11 +231,11 @@ CRootedTree::CRootedTree(const vector<int> &labels)
 			find(labels.cbegin(), labels.cend(), ROOT_LABEL);
 
 		int rootSerialNo = iter - (labels.cbegin() + 1);
-		//std::cout << "root no: " << rootSerialNo << std::endl;
+		std::cout << "root no: " << rootSerialNo << std::endl;
 		m_root = buildTree(rootSerialNo,
 			vector<int>(labels.cbegin() + 1, labels.cend()),
 			m_levels);
-		//std::cout << std::endl;
+		std::cout << std::endl;
 		generateNodeList();
 	}
 }
@@ -307,7 +308,7 @@ bool isIsomorphism2(CRootedTree *tree1, CRootedTree *tree2)
 	else
 	{
 		int h = tree1->m_levels;
-		for (int i = h - 1; i > 0; i--)
+		for (int i = h - 1; i >= 0; i--)
 		{
 			if (tree1->m_nodes[i].size() != tree2->m_nodes[i].size())
 				return false;
