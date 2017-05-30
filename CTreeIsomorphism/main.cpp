@@ -4,6 +4,7 @@
 #include <functional>
 #include <iostream>
 #include <string>
+#include <utility>
 #include <cstring>
 #include <cstdlib>
 #include <cstdio>
@@ -22,7 +23,7 @@ using std::find_first_of;
 using std::fprintf;
 using std::swap;
 using std::sort;
-using std::less;
+//using std::less;
 using namespace std::placeholders;
 
 
@@ -72,7 +73,7 @@ private:
 	} *pCTreeNode;
 
 	CTreeNode *m_root;
-	vector<vector<CTreeNode*>> m_nodes;
+	vector<vector<CTreeNode*> > m_nodes;
 	int m_levels;
 	int m_order;
 
@@ -80,8 +81,8 @@ private:
 
 	pCTreeNode copyTreeNode(const pCTreeNode pnode);
 	pCTreeNode buildTree(int iSerialNo, const vector<int> &labels);
-	void generateNodeList();
 	void clearNodes();
+	void generateNodeList();
 	//int getlevels(const vector<int> &labels);
 
 	friend bool isIsomorphism(const pCTreeNode tnode1, const pCTreeNode tnode2);
@@ -117,51 +118,6 @@ CRootedTree::pCTreeNode CRootedTree::copyTreeNode(const pCTreeNode pnode)
 {
 	pCTreeNode res_node = new CTreeNode(*pnode);
 	return res_node;
-}
-
-void CRootedTree::clearNodes()
-{
-	for (vector<vector<CTreeNode *>>::iterator iter = m_nodes.begin();
-		iter != m_nodes.end(); iter++)
-	{
-		iter->clear();
-	}
-	m_nodes.clear();
-}
-
-void CRootedTree::generateNodeList()
-{
-	clearNodes();
-
-	if (m_root != nullptr)
-	{
-		//m_nodes.resize(m_levels);
-		vector<CTreeNode *> currLevelNodes(1, m_root);
-		vector<CTreeNode *> nextLevelNodes;
-		
-		//pCTreeNode pNode = m_root;
-		vector<CTreeNode *> *pNodes1 = &currLevelNodes;
-		vector<CTreeNode *> *pNodes2 = &nextLevelNodes;
-		while (!pNodes1->empty())
-		{
-			m_levels++;
-			m_nodes.push_back(*pNodes1);
-			for (vector<CTreeNode *>::const_iterator citer = pNodes1->cbegin();
-				citer != pNodes1->cend(); citer++)
-			{				
-				pNodes2->clear();
-				if (!((*citer)->m_isLeaf))
-				{
-					if (pNodes2->empty())
-						pNodes2->assign((*citer)->m_children.cbegin(), (*citer)->m_children.cend());
-					else
-						pNodes2->insert(pNodes2->cend() - 1, (*citer)->m_children.cbegin(), (*citer)->m_children.cend());
-				}
-			}
-			swap(pNodes1, pNodes2);
-		}
-		//cout << "m level: " << m_levels << endl;
-	}
 }
 
 CRootedTree::CRootedTree(const CRootedTree &ex_tree)
@@ -209,13 +165,64 @@ CRootedTree::pCTreeNode CRootedTree::buildTree(int iSerialNo, const vector<int> 
 		if (labels.at(i) == iSerialNo)
 		{
 			pnode->m_isLeaf = false;
-			pCTreeNode pChild = buildTree(i, labels);
 			//pnode->m_rep.insert(pnode->m_rep.length() - 2, pChild->m_rep);
-			pnode->m_children.push_back(pChild);
+			pnode->m_children.push_back(buildTree(i, labels));
 		}
 	}
 	//std::cout << "serials no: " << iSerialNo << " " << endl;
 	return pnode;
+}
+
+void CRootedTree::clearNodes()
+{
+	vector<vector<CRootedTree::CTreeNode*> >::iterator iter = m_nodes.begin();
+	for (; iter != m_nodes.end(); iter++)
+	{
+		iter->clear();
+	}
+	m_nodes.clear();
+}
+
+void CRootedTree::generateNodeList()
+{
+	clearNodes();
+
+	if (m_root != nullptr)
+	{
+		//m_nodes.resize(m_levels);
+		vector<CRootedTree::CTreeNode*> currLevelNodes(1, m_root);
+		vector<CRootedTree::CTreeNode*> nextLevelNodes;
+
+		//pCTreeNode pNode = m_root;
+		vector<CRootedTree::CTreeNode*> *pNodes1 = &currLevelNodes;
+		vector<CRootedTree::CTreeNode*> *pNodes2 = &nextLevelNodes;
+		while (!pNodes1->empty())
+		{
+			m_levels++;
+			m_nodes.push_back(*pNodes1);
+
+			vector<CRootedTree::CTreeNode*>::const_iterator citer = pNodes1->cbegin();
+			for (; citer != pNodes1->cend(); citer++)
+			{
+				if (!((*citer)->m_isLeaf))
+				{
+					if (pNodes2->empty())
+						pNodes2->assign((*citer)->m_children.cbegin(), 
+										(*citer)->m_children.cend());
+					else
+						pNodes2->insert(pNodes2->cend() - 1, 
+										(*citer)->m_children.cbegin(), 
+										(*citer)->m_children.cend());
+				}
+			}
+			/*vector<CRootedTree::CTreeNode *> *tmpPtr = pNodes2;
+			pNodes2 = pNodes1;
+			pNodes1 = tmpPtr;*/
+			swap(pNodes1, pNodes2);
+			pNodes2->clear();
+		}
+		//cout << "m level: " << m_levels << endl;
+	}
 }
 
 //int CRootedTree::getlevels(const vector<int> &labels)
@@ -328,6 +335,17 @@ bool isIsomorphism2(CRootedTree *tree1, CRootedTree *tree2)
 						(*nodeIt1)->m_rep.insert(1, (*criter)->m_rep);
 					}
 				}
+
+				if (!((*nodeIt2)->m_isLeaf))
+				{
+					vector<CRootedTree::CTreeNode *>::const_reverse_iterator criter
+						= (*nodeIt2)->m_children.crbegin();
+					for (; criter != (*nodeIt2)->m_children.crend(); criter++)
+					{
+						(*nodeIt2)->m_rep.insert(1, (*criter)->m_rep);
+					}
+				}
+
 				t1LevelStrs.push_back((*nodeIt1)->m_rep);
 				t2LevelStrs.push_back((*nodeIt2)->m_rep);
 			}
@@ -335,7 +353,7 @@ bool isIsomorphism2(CRootedTree *tree1, CRootedTree *tree2)
 			sort(t1LevelStrs.begin(), t1LevelStrs.end());
 			sort(t2LevelStrs.begin(), t2LevelStrs.end());
 			if (!equal(t1LevelStrs.cbegin(), t1LevelStrs.cend(),
-				t2LevelStrs.cbegin(), t2LevelStrs.cend()))
+					t2LevelStrs.cbegin(), t2LevelStrs.cend()))
 				return false;
 
 			for (size_t j = 0; j < t1LevelStrs.size(); j++)
@@ -500,7 +518,7 @@ int main()
 	string strInput;
 
 	int scenarioNo = 0;
-	vector<vector<int>> scenarios;
+	//vector<vector<int>> scenarios;
 	while (getline(cin, strInput))
 	{
 		if (strInput == "")
@@ -527,17 +545,17 @@ int main()
 			getTreesFromLabels(serialStrs, rootedTrees);
 		}
 
-		vector<int> scenario;
+		/*vector<int> scenario;
 		scenario.push_back(scenarioNo);
-		outputTreesData(rootedTrees, scenario);
-		/*cout << scenarioNo << ": " << flush;
-		outputTrees(rootedTrees);*/
+		outputTreesData(rootedTrees, scenario);*/
+		cout << scenarioNo << ": " << flush;
+		outputTrees(rootedTrees);
 		
-		scenarios.push_back(scenario);
+		//scenarios.push_back(scenario);
 		scenarioNo++;
 	}
 
-	outputResult(scenarios);
+	//outputResult(scenarios);
 
 	return 0;
 }
