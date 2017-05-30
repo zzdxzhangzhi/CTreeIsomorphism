@@ -152,12 +152,15 @@ void CRootedTree::generateNodeList()
 				pNodes2->clear();
 				if (!((*citer)->m_isLeaf))
 				{
-					pNodes2->insert(pNodes2->cend() - 1, (*citer)->m_children.cbegin(), (*citer)->m_children.cend());
+					if (pNodes2->empty())
+						pNodes2->assign((*citer)->m_children.cbegin(), (*citer)->m_children.cend());
+					else
+						pNodes2->insert(pNodes2->cend() - 1, (*citer)->m_children.cbegin(), (*citer)->m_children.cend());
 				}
 			}
 			swap(pNodes1, pNodes2);
 		}
-		cout << "m level: " << m_levels << endl;
+		//cout << "m level: " << m_levels << endl;
 	}
 }
 
@@ -211,7 +214,7 @@ CRootedTree::pCTreeNode CRootedTree::buildTree(int iSerialNo, const vector<int> 
 			pnode->m_children.push_back(pChild);
 		}
 	}
-	std::cout << "serials no: " << iSerialNo << " " << endl;
+	//std::cout << "serials no: " << iSerialNo << " " << endl;
 	return pnode;
 }
 
@@ -229,10 +232,10 @@ CRootedTree::CRootedTree(const vector<int> &labels)
 			find(labels.cbegin(), labels.cend(), ROOT_LABEL);
 
 		int rootSerialNo = iter - (labels.cbegin() + 1);
-		std::cout << "root no: " << rootSerialNo << std::endl;
+		//std::cout << "root no: " << rootSerialNo << std::endl;
 		m_root = buildTree(rootSerialNo,
 			vector<int>(labels.cbegin() + 1, labels.cend()));
-		std::cout << std::endl;
+		//std::cout << std::endl;
 		generateNodeList();
 	}
 }
@@ -312,7 +315,7 @@ bool isIsomorphism2(CRootedTree *tree1, CRootedTree *tree2)
 
 			vector<string> t1LevelStrs, t2LevelStrs;
 			vector<CRootedTree::CTreeNode *>::iterator nodeIt1 = tree1->m_nodes[i].begin();
-			vector<CRootedTree::CTreeNode *>::iterator nodeIt2 = tree1->m_nodes[i].begin();
+			vector<CRootedTree::CTreeNode *>::iterator nodeIt2 = tree2->m_nodes[i].begin();
 			for (; nodeIt1 != tree1->m_nodes[i].end() && nodeIt2 != tree2->m_nodes[i].end(); 
 				nodeIt1++, nodeIt2++)
 			{
@@ -335,7 +338,7 @@ bool isIsomorphism2(CRootedTree *tree1, CRootedTree *tree2)
 				t2LevelStrs.cbegin(), t2LevelStrs.cend()))
 				return false;
 
-			for (size_t j = 0; j < t1LevelStrs.size(); i++)
+			for (size_t j = 0; j < t1LevelStrs.size(); j++)
 			{
 				tree1->m_nodes[i][j]->m_rep.assign(t1LevelStrs[j]);
 				tree2->m_nodes[i][j]->m_rep.assign(t2LevelStrs[j]);
@@ -431,7 +434,8 @@ void outputTrees(vector<CRootedTree *> &rootedTrees)
 	int treeClassesMax = treeClasses[0];
 
 	cout << treeClasses[0] << " ";
-	bool (*pred)(const CRootedTree *, const CRootedTree *) = &isIsomorphism;
+	//bool (*pred)(const CRootedTree *, const CRootedTree *) = &isIsomorphism;
+	bool(*pred)(CRootedTree *, CRootedTree *) = &isIsomorphism2;
 	for (size_t j = 1; j < rootedTrees.size(); j++)
 	{
 		vector<CRootedTree *>::iterator iter = rootedTrees.begin();
@@ -454,7 +458,8 @@ void outputTreesData(vector<CRootedTree *> &rootedTrees, vector<int> &scenario)
 	int treeClassesMax = treeClasses[0];
 
 	scenario.push_back(treeClasses[0]);
-	bool(*pred)(const CRootedTree *, const CRootedTree *) = &isIsomorphism;
+	//bool(*pred)(const CRootedTree *, const CRootedTree *) = &isIsomorphism;
+	bool(*pred)(CRootedTree *, CRootedTree *) = &isIsomorphism2;
 	for (size_t j = 1; j < rootedTrees.size(); j++)
 	{
 		vector<CRootedTree *>::iterator iter = rootedTrees.begin();
