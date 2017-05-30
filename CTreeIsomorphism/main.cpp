@@ -37,7 +37,7 @@ public:
 	CRootedTree& operator = (const CRootedTree &ex_tree);
 
 	bool isIsomorphism(const CRootedTree &ex_tree);
-	//bool isIsomorphism2(CRootedTree &ex_tree);
+	bool isIsomorphism2(CRootedTree &ex_tree);
 
 	bool isEmpty() const
 	{
@@ -201,18 +201,18 @@ void CRootedTree::generateNodeList()
 			m_levels++;
 			m_nodes.push_back(*pNodes1);
 
-			vector<CRootedTree::CTreeNode*>::const_iterator citer = pNodes1->cbegin();
-			for (; citer != pNodes1->cend(); citer++)
+			vector<CRootedTree::CTreeNode*>::iterator iter = pNodes1->begin();
+			for (; iter != pNodes1->end(); iter++)
 			{
-				if (!((*citer)->m_isLeaf))
+				if (!((*iter)->m_isLeaf))
 				{
 					if (pNodes2->empty())
-						pNodes2->assign((*citer)->m_children.cbegin(), 
-										(*citer)->m_children.cend());
+						pNodes2->assign((*iter)->m_children.cbegin(), 
+										(*iter)->m_children.cend());
 					else
-						pNodes2->insert(pNodes2->cend() - 1, 
-										(*citer)->m_children.cbegin(), 
-										(*citer)->m_children.cend());
+						pNodes2->insert(pNodes2->end() - 1, 
+										(*iter)->m_children.cbegin(), 
+										(*iter)->m_children.cend());
 				}
 			}
 			/*vector<CRootedTree::CTreeNode *> *tmpPtr = pNodes2;
@@ -350,11 +350,20 @@ bool isIsomorphism2(CRootedTree *tree1, CRootedTree *tree2)
 				t2LevelStrs.push_back((*nodeIt2)->m_rep);
 			}
 
+			if (t1LevelStrs.size() != t2LevelStrs.size())
+				return false;
+
 			sort(t1LevelStrs.begin(), t1LevelStrs.end());
 			sort(t2LevelStrs.begin(), t2LevelStrs.end());
-			if (!equal(t1LevelStrs.cbegin(), t1LevelStrs.cend(),
+			/*if (!equal(t1LevelStrs.cbegin(), t1LevelStrs.cend(),
 					t2LevelStrs.cbegin(), t2LevelStrs.cend()))
-				return false;
+				return false;*/
+			
+			for (size_t i = 0; i < t1LevelStrs.size(); i++)
+			{
+				if (t1LevelStrs[i] != t2LevelStrs[i])
+					return false;
+			}
 
 			for (size_t j = 0; j < t1LevelStrs.size(); j++)
 			{
@@ -372,10 +381,10 @@ bool CRootedTree::isIsomorphism(const CRootedTree &ex_tree)
 	return ::isIsomorphism(this, &ex_tree);
 }
 
-//bool CRootedTree::isIsomorphism2(CRootedTree &ex_tree)
-//{
-//	return ::isIsomorphism2(this, &ex_tree);
-//}
+bool CRootedTree::isIsomorphism2(CRootedTree &ex_tree)
+{
+	return ::isIsomorphism2(this, &ex_tree);
+}
 
 //void printTreeNode(CRootedTree::CTreeNode *pNode)
 //{
