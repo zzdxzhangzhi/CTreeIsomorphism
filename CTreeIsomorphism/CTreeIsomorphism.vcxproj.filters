@@ -18,6 +18,9 @@
     <Text Include="..\..\TreeIsomorphism\TreeIsomorphism\bin\Debug\treelabels.txt">
       <Filter>Resource Files</Filter>
     </Text>
+    <Text Include="..\treetest.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">

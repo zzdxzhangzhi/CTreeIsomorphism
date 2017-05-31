@@ -140,6 +140,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <Text Include="..\..\TreeIsomorphism\TreeIsomorphism\bin\Debug\treelabels.txt" />
+    <Text Include="..\treetest.txt" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />

@@ -201,16 +201,22 @@ void CRootedTree::buildTree(int iSerialNo, vector<pair<int, int> > &labels)
 			m_nodeList[currSerialNo] = pnode;
 			currLevelSerials.push_back(currSerialNo);
 
-			vector<pair<int, int> >::const_iterator citer;
+			vector<pair<int, int> >::iterator citer = labels.begin();
 			int childCount = 0;
-			while ((citer = find_if(labels.cbegin(), labels.cend(), [currSerialNo](pair<int, int> label) { return label.first == currSerialNo; })) != labels.cend())
+			//while ((citer = find_if(labels.cbegin(), labels.cend(), [currSerialNo](pair<int, int> label) { return label.first == currSerialNo; })) != labels.cend())
+			for (; citer != labels.end(); )
 			{
-				childCount++;
-				int childSerial = citer->second;
-				pnode->m_childrenSerials.push_back(childSerial);
-				pNext->push_back(*citer);
+				if (citer->first == currSerialNo)
+				{
+					childCount++;
+					int childSerial = citer->second;
+					pnode->m_childrenSerials.push_back(childSerial);
+					pNext->push_back(*citer);
 
-				labels.erase(citer);
+					citer = labels.erase(citer);
+				}
+				else
+					citer++;
 			}
 
 			//std::cout << "childs: " << childCount << " " << endl;
@@ -477,12 +483,11 @@ bool isIsomorphism2(CRootedTree *tree1, CRootedTree *tree2)
 
 			sort(t1LevelStrs.begin(), t1LevelStrs.end());
 			sort(t2LevelStrs.begin(), t2LevelStrs.end());
-			/*if (!equal(t1LevelStrs.cbegin(), t1LevelStrs.cend(),
-					t2LevelStrs.cbegin(), t2LevelStrs.cend()))
-				return false;*/
-			
-			if (!equalStrs(t1LevelStrs, t2LevelStrs))
+			if (!equal(t1LevelStrs.cbegin(), t1LevelStrs.cend(), t2LevelStrs.cbegin()))
 				return false;
+			
+			/*if (!equalStrs(t1LevelStrs, t2LevelStrs))
+				return false;*/
 
 			// re-assign representation strings for the nodes in this level
 			for (size_t j = 0; j < t1LevelStrs.size(); j++)
