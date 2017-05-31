@@ -211,22 +211,24 @@ void CRootedTree::buildTree(int iSerialNo, vector<pair<int, int> > &labels)
 			m_nodeList[currSerialNo] = pnode;
 			currLevelSerials.push_back(currSerialNo);
 
-			vector<pair<int, int> >::iterator citer = labels.begin();
+			vector<pair<int, int> >::const_iterator citer = labels.cbegin();
 			int childCount = 0;
-			//while ((citer = find_if(labels.cbegin(), labels.cend(), [currSerialNo](pair<int, int> label) { return label.first == currSerialNo; })) != labels.cend())
-			for (; citer != labels.end(); )
+			while ((citer = find_if(citer, labels.cend(), 
+				[currSerialNo](auto label) { return label.first == currSerialNo; })) 
+				!= labels.cend())
+			//for (; citer != labels.end(); )
 			{
-				if (citer->first == currSerialNo)
-				{
+			//	if (citer->first == currSerialNo)
+			//	{
 					childCount++;
 					int childSerial = citer->second;
 					pnode->m_childrenSerials.push_back(childSerial);
 					pNext->push_back(*citer);
 
 					citer = labels.erase(citer);
-				}
-				else
-					citer++;
+			//	}
+			//	else
+			//		citer++;
 			}
 
 			//std::cout << "childs: " << childCount << " " << endl;
@@ -272,12 +274,15 @@ void CRootedTree::clearNodes()
 }
 
 void CRootedTree::refreshRepForAll()
-{
-	//for_each(m_nodeList.begin(), m_nodeList.end(), [](auto pNode) { pNode->refreshRep(); });
-	for (size_t i = 0; i < m_nodeList.size(); i++)
-	{
-		m_nodeList[i]->refreshRep();
-	}
+{	
+//#ifndef C++1y
+//	for (size_t i = 0; i < m_nodeList.size(); i++)
+//	{
+//		m_nodeList[i]->refreshRep();
+//	}
+//#else
+	for_each(m_nodeList.begin(), m_nodeList.end(), [](auto pNode) { pNode->refreshRep(); });
+//#endif
 }
 
 //void CRootedTree::generateNodeList()
