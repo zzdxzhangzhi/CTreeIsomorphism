@@ -25,6 +25,7 @@ using std::swap;
 using std::sort;
 using std::pair;
 using std::make_pair;
+using std::for_each;
 //using std::less;
 using namespace std::placeholders;
 
@@ -73,6 +74,8 @@ private:
 		CTreeNode(int label, int serialNo) 
 			: m_label(label), m_serialNo(serialNo), m_isLeaf(true), m_rep("10") {}
 		CTreeNode(const CTreeNode &ex_node);
+		void refreshRep();
+
 	} *pCTreeNode;
 
 	//CTreeNode *m_root;
@@ -89,6 +92,7 @@ private:
 	void copyTree(const CRootedTree &ex_tree);
 	void buildTree(int iSerialNo, vector<pair<int, int> > &labels);
 	void clearNodes();
+	void refreshRepForAll();
 	//void generateNodeList();
 	//int getlevels(const vector<int> &labels);
 
@@ -121,6 +125,12 @@ CRootedTree::CTreeNode::CTreeNode(const CTreeNode &ex_node)
 			m_children.push_back(new CTreeNode(*(*iter)));
 		}
 	}*/
+}
+
+void CRootedTree::CTreeNode::refreshRep()
+{
+	m_rep.clear();
+	m_rep.assign("10");
 }
 
 CRootedTree::pCTreeNode CRootedTree::copyTreeNode(const pCTreeNode pnode)
@@ -259,6 +269,15 @@ void CRootedTree::clearNodes()
 	m_nodeList.clear();
 
 	m_levelNodeSerials.clear();
+}
+
+void CRootedTree::refreshRepForAll()
+{
+	//for_each(m_nodeList.begin(), m_nodeList.end(), [](auto pNode) { pNode->refreshRep(); });
+	for (size_t i = 0; i < m_nodeList.size(); i++)
+	{
+		m_nodeList[i]->refreshRep();
+	}
 }
 
 //void CRootedTree::generateNodeList()
@@ -437,12 +456,15 @@ bool isIsomorphism2(CRootedTree *tree1, CRootedTree *tree2)
 		return false;
 	else
 	{
+		// assign representation string to default "10"
+		tree1->refreshRepForAll();
+		tree2->refreshRepForAll();
 		int h = tree1->m_levels;
 		for (int i = h - 1; i >= 0; i--)
 		{
 			if (tree1->m_levelNodeSerials[i].size() != tree2->m_levelNodeSerials[i].size())
 				return false;
-
+			
 			vector<string> t1LevelStrs, t2LevelStrs;
 			vector<int>::iterator nodeIt1 = tree1->m_levelNodeSerials[i].begin();
 			vector<int>::iterator nodeIt2 = tree2->m_levelNodeSerials[i].begin();
